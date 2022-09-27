@@ -73,9 +73,12 @@ Scehdule 은 여러 transaction 들이 동시에 실행될 때,
 * 두 operation 모두 write 로 이루어져 있다.
 
 ### Conflict Equivalent
-
+  
+**Conflict Equivalent 는 아래와 같은 특징을 가진다.**          
 1. 두 schedule 은 같은 transaction 들을 가진다.  
 2. 어떤(모든) conflicting operations의 순서도 양쪽 schedule 모두 동일하다. 
+
+#### Conflict Serializable
 
 * Schedule 2 : r2(H) -> w2(H) -> c2 -> r1(K) -> w1(K) -> r1(H) -> w1(H) -> c1
 * Schedule 3 : r1(k) -> w1(k) -> r2(H) -> w2(H) -> c2 -> r1(H) -> w1(H) -> c1
@@ -93,11 +96,41 @@ Scehdule 은 여러 transaction 들이 동시에 실행될 때,
 * Schedule 3번 : write/write conflict 은 w2(H)/w1(H)이다.     
 
 두 스케줄의 모든 conflict 이 일치한다면 Conflict Equivalent 라고 말할 수 있다.     
-그리고 이처럼 serial schedule 과 conflict Equivalent 일 때 conflict Serializable 이라 한다.  
+그리고 이처럼 serial schedule 과 conflict Equivalent 일 때 Conflict Serializable 이라 한다.  
 `Schedule 2번`은 serial schedule 이고 `Schedule 3번`은 non serial schedule 이다.  
 그렇기에 `Schedule 3번`은 conflict Serializable 이라 할 수 있다.  
 
+#### Not Conflict Serializable
 
+* Schedule 2 : r2(H) -> w2(H) -> c2 -> r1(K) -> w1(K) -> r1(H) -> w1(H) -> c1
+* Schedule 4 : r1(k) -> w1(k) -> r1(H) -> r2(H) -> w2(H) -> c2 -> w1(H) -> c1
 
+**비교 결과**
+* w2(h) -> r1(H) 에 대해서, Conflict 순서가 다르다.
+    * Schedule 2 : w2(h) -> r1(H)  
+    * Schedule 4 : r1(H) -> w2(h)
 
-## serializability
+다른 serial schedule 도 비교해보자.   
+  
+* Schedule 1 : r1(K) -> w1(K) -> r1(H) -> w1(H) -> c1 -> r2(H) -> w2(H) -> c2
+* Schedule 4 : r1(k) -> w1(k) -> r1(H) -> r2(H) -> w2(H) -> c2 -> w1(H) -> c1
+
+**비교 결과**
+* r1(H) -> w2(H) 는 동일하다. 
+* r2(H) -> w1(H) 에 대해서 Conflict 순서가 다르다.
+    * Schedule 1 : w1(H) -> r2(H)
+    * Schedule 4 : r2(H) -> w1(H)  
+
+결국, Schedule 4은, Not Conflict Serializable 이다.   
+
+## 정리 
+
+**고민 거리**
+* 성능 때문에 여러 transaction 들을 겹쳐서 실행할 수 있으면 좋다.    
+* 하지만 이상한 결과가 나오는 것은 싫다.   
+  
+**해결책**    
+* conflict serializable 한 nonserial schedule 을 허용하자.  
+
+**구현**  
+* 여러 transaction 을 동시에 실행해도 schedule 이 conflict serializable 하도록 보장하는 **프로토콜 적용**  
