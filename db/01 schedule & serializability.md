@@ -93,16 +93,9 @@ Scehdule 은 여러 transaction 들이 동시에 실행될 때,
 * Schedule 3번 : write/write conflict 은 w2(H)/w1(H)이다.     
 
 두 스케줄의 모든 conflict 이 일치한다면 Conflict Equivalent 라고 말할 수 있다.     
-그리고 이처럼 serial schedule 과 conflict Equivalent 일 때 conflict Serializable 이라한다.  
-
-   
-   
-`Schedule 2번`은 serial schedule 이고 
-`Schedule 3번`은 non serial schedule 이다.  
-
-
-
-
+그리고 이처럼 serial schedule 과 conflict Equivalent 일 때 conflict Serializable 이라 한다.  
+`Schedule 2번`은 serial schedule 이고 `Schedule 3번`은 non serial schedule 이다.  
+그렇기에 `Schedule 3번`은 conflict Serializable 이라 할 수 있다.  
 
 
 
