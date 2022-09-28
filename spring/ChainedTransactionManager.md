@@ -24,5 +24,9 @@ commit 을 진행하면 롤백이 불가능하다.
 위 그림과 같이 커밋 작업이 일렬 밀려있는 형태면 좋다.   
 
 # JtaTransactionManager
+> [JtaTransactionManager](https://docs.spring.io/spring-boot/docs/2.1.6.RELEASE/reference/html/boot-features-jta.html)
+
+
+
 
 # TransactionSynchronization
