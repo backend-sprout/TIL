@@ -19,5 +19,28 @@ Serializable 과 Read UnCommitted 는 아래와 같이 조금 다르게 동작�
 * MVCC는 커밋된 데이터를 읽기 때문에, 이 Level 에서는 보통 MVCC가 적용되지 않는다. 
 * 참고로, PostgreSQL 은 해당 레벨이 존재하지만, Read Committed 처럼 동작한다.  
 
+## PostgreSQL 에서의 Lost Updae
 
+
+```plantuml
+participant TransactionA
+database Database
+participant TransactionB
+
+Database -> Database : x = 50, y = 10
+Database -> TransactionA : read(x) => 50
+TransactionA -> Database: write(x = 10)
+
+TransactionB -> Database : read(x) => 50
+TransactionB -> Database : wrtie wait(x = 80) 
+
+Database -> TransactionA : read(x) => 10
+TransactionA -> Database  : write(y = 50) 
+
+
+TransactionB -> Database : wrtie start(x = 80) 
+```
+
+
+* hello
 
