@@ -99,9 +99,44 @@ XA Transaction 을 사용하기 위해선 최소 Repeatable Read 수준의 격�
 3. XA 트랜잭션이 적용되는 동안 일반 트랜잭션을 시작하려고 하면, 1399 오류가 발생한다.
 4. XA 트랜잭션이 유효한 경우 일반 트랜잭션에 대해 내제된 COMMIT 를 발생시키는 명령문은 1400 오류
 
+## Internal XA vs External XA
+XA Transaction 은 MariaDB 에서 오버로드된 용어다.   
+스토리지 엔진이 XA를 지원하는 경우 다음 중 하나 또는 둘 다를 의미할 수 있다. 
 
+**Internal XA**
+* MariaDB 내부 2PC API를 지원한다.
+* 사용자에게 투명성을 보장해준다.
+  MariaDB의 internal transaction coordinator log 가 
+  이러한 트랜잭션을 조정 처리할 수 있기에 이를 Internal XA 라고 부른다.
 
+**External XA**
+* XA START, XA PREPARE, XA COMMIT 등 같은 XA 트랜잭션을 지원한다.
+* 이 기능을 올바르게 사용하려면 exteranl transaction coordinator 를 사용해야하기에
+  이를 External XA 라고 한다.
 
+## Transaction Coordinator Log
+* 2개 이상의 XA 지원 가능한 스토리지 엔진이 사용 가능한 경우 
+  Transaction Coordinator Log를 사용할 수 있어야한다.
+* Transaction Coordinator Log 에는 2가지 구현 방식이 있다.
+	* 이진 로그 기반 Transaction Coordinator Log
+	* 메모리 매핑 파일 기반 Transaction Coordinator Log
+
+서버에서 이진 로그가 활성화 된 경우   
+서버는 이진 로그 기반 트랜잭션 코디네이터를 사용한다.   
+그렇지 않으면 메모리 매핑 된 파일 기반 트랜잭션 코디네이터 로그를 사용한다.  
+
+## XA function
+| 함수        | 설명                                                                                          |
+| ----------- | --------------------------------------------------------------------------------------------- |
+| xa_open     | 리소스 매니저(Resource Manager)에 접속한다.                                                   |
+| xa_close    | 리소스 매니저에서 데이터베이스 접속을 해제한다.                                               |
+| xa_start    | XID값을 주고 새로운 트랜잭션을 시작하거나, 이미 존재하는 트랜잭션에 현재 프로세스를 연결한다. |
+| xa_end      | XID의 TX에서 현재 프로세스를 분리한다.                                                        |
+| xa_rollback | XID의 TX를 롤백한다.                                                                          |
+| xa_prepare  | XID의 TX에 대한 커밋을 준비한다. Two-phase commit의 First Phase이다.                          |
+| xa_commit   | XID의 TX에 대한 커밋을 완료한다. Two-phase commit의 Second Phase이다.                         |
+| xa_recover  | prepare 상태인 트랜잭션의 목록을 검사하여 커밋이나 롤백을 수행한다.                           |
+| xa_forget   | XID의 TX가 이미 처리된 경우 로그 기록을 삭제한다.                                             |
 
 
 # Galera Cluster에서 이슈
