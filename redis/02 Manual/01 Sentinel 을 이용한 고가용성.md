@@ -1,4 +1,4 @@
-# Sentinal 
+# Sentinel 
 ## Sentinal 개요  
        
 **`In-Memory Database`에서의 장애 위험성**.       
@@ -14,7 +14,7 @@
 어플리케이션이 마스터 노드에 접근할 수 없을 때 데이터를 가져오기 위해 갑자기 많은 커넥션이 RDBMS에 몰려 서비스 장애로까지 이어진 사례도 많습니다.   
 이러한 문제를 해결하기 위해서 Redis 는 Sentinal 기능을 지원해줍니다.    
      
-## Sentinal 을 이용한 고가용성      
+## Sentinel 을 이용한 고가용성      
                   
 Redis Sentinel은 Redis Cluster 를 사용하지 않을 때 Redis에 고가용성을 제공합니다.             
 Redis Sentinel은 또한 `모니터링`, `알림`과 같은 `기타 부수적 작업`을 제공하고 클라이언트를 위한 구성 제공자 역할을 합니다.  
@@ -72,6 +72,56 @@ Sentinel 노드는 어플리케이션에게 현재 마스터의 IP, PORT를 알�
 연결이 안되는 마스터에 대한 복제 연결을 끊고, 복제 노드 중 한 개를 선택하여 마스터로 승격시킵니다.        
 또 다른 복제 노드는 승격된 마스터 노드에 연결시킵니다.      
 만약 다운되었던 마스터 노드가 다시 살아난다면 새로운 마스터에 복제본으로 연결됩니다.  
+
+## Sentinal 실행하기 
+
+```
+redis-sentinel /path/to/sentinel.conf
+```
+* redis-sentinel 명령어를 통해 센티널 인스턴스를 생성할 수 있습니다.  
+
+```
+redis-server /path/to/sentinel.conf --sentinel
+```
+* redis-server 명령어와 `--sentinel`를 통해서도 센티널 인스턴스를 생성할 수 있습니다.   
+       
+Sentinel을 실행할 때 구성 파일(sentinel.conf)을 사용하는 것은 필수 입니다.       
+이 파일은 재시작시 다시 로드되는 현재 상태를 저장하기 위해 시스템에서 사용하기 때문입니다.       
+Sentinel은 구성 파일(sentinel.conf)이 제공되지 않거나 구성 파일 경로가 쓰기 불가능하면 시작을 거부합니다.    
+
+Sentinel 사용하면 TCP 포트 26379을 통해 다른 인스턴스와 연결하고 데이터를 수신할 수 있다.   
+
+### 배포하기 전에 Sentinel에 대해 알아야 할 기본 사항
+ 
+* 강력한 배포를 위해서는 최소 3개의 Sentinel 인스턴스가 필요합니다.   
+* 3개의 Sentinel 인스턴스는 독립적인 방식으로 실패하는 것으로 여겨지는 컴퓨터 또는 가상 머신에 배치되어야 합니다.  
+* Sentinel + Redis 분산 시스템은 Redis가 비동기식 복제를 사용하기 때문에 오류 발생 시 승인된 쓰기가 유지되는 것을 보장하지 않습니다.      
+  그러나 쓰기 손실 창을 특정 순간으로 제한하는 Sentinel을 배포하는 방법이 있지만 배포하는 다른 덜 안전한 방법이 있습니다.   
+* 클라이언트에서 Sentinel 지원이 필요합니다.   
+  인기 있는 클라이언트 라이브러리는 Sentinel을 지원하지만 전부는 아닙니다.
+* 개발 환경에서 수시로 테스트하지 않으면 안전한 HA 설정은 없으며 프로덕션 환경에서 테스트할 수 있다면 더 좋습니다.   
+  너무 늦었을 때만(당신의 주인이 작동을 멈추는 새벽 3시에) 명백해지는 잘못된 구성이 있을 수 있습니다.
+* Sentinel, Docker 또는 기타 형태의 네트워크 주소 변환 또는 포트 매핑은 주의하여 혼합해야 합니다.   
+  Docker는 포트 재매핑을 수행하여 다른 Sentinel 프로세스와 마스터의 복제본 목록에 대한 Sentinel 자동 검색을 중단합니다.   
+
+### sentinel.conf
+
+```conf
+// sentinel monitor <master-group-name> <ip> <port> <quorum>
+// sentinel <option_name> <master_name> <option_value>
+
+sentinel monitor mymaster 127.0.0.1 6379 2
+sentinel down-after-milliseconds mymaster 60000
+sentinel failover-timeout mymaster 180000
+sentinel parallel-syncs mymaster 1
+
+sentinel monitor resque 192.168.1.3 6380 4
+sentinel down-after-milliseconds resque 10000
+sentinel failover-timeout resque 180000
+sentinel parallel-syncs resque 5
+```
+
+
 
 
 
