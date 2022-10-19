@@ -120,6 +120,18 @@ sentinel down-after-milliseconds resque 10000
 sentinel failover-timeout resque 180000
 sentinel parallel-syncs resque 5
 ```
+   
+모니터링할 '마스터'를 지정하기만 하면 분리된 각 마스터(복제본이 여러 개 있을 수 있음)에 다른 이름을 지정할 수 있습니다.        
+Sentinel은 자동 검색을 통해 복제본에 대한 정보와 그 구성을 자동으로 업데이트합니다  
+또한 장애 조치 중에 복제본이 마스터로 승격될 때마다 그리고 새 Sentinel이 발견될 때마다 구성이 다시 작성됩니다.      
+
+```
+sentinel monitor <master-group-name> <ip> <port> <quorum>
+```
+* quorum :    
+  마스터를 실패로 표시하고 가능한 경우 결국 장애 조치 절차를 시작하기 위해   
+  마스터에 연결할 수 없다는 사실에 동의해야 하는 센티넬의 수입니다 .
+* 
 
 
 
